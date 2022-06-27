@@ -1,0 +1,21 @@
+{% extends "accounts/base.html" %} {% block container %}
+<div class="h-100 d-flex align-items-center justify-content-center">
+  <div class="card" style="width: 18rem">
+    <div class="card-body">
+      <p class="card-text">
+        Application is asking for following permissions <b>{{scope}}</b> <br />
+        Grant Permission ?
+      </p>
+      <a
+        href="{% url 'c_auth:auth_grant' %}?client_id={{client_id}}&scope={{scope}}&response_type={{response_type}}"
+        class=""
+      >
+        <button type="button" class="btn btn-primary">Yes</button>
+      </a>
+      <a href="{{callback_uri}}/?permission=denied" class="">
+        <button type="button" class="btn btn-danger">No</button>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

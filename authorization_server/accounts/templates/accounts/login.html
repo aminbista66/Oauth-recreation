@@ -1,0 +1,13 @@
+{% extends "accounts/base.html" %} {% block container %}
+{% load crispy_forms_tags %}
+<div class="container px-8">
+  <form action="" method="post">
+    {% csrf_token %}
+    {{form|crispy}}
+    <div class="py-4">
+      <a href="{% url 'accounts:password_reset' %}">Forgot Password?</a>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+{% endblock container %}
