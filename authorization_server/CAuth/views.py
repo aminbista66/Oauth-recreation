@@ -28,8 +28,14 @@ class CustomLoginView(LoginView):
             client = client.first()
             print(client)
             scope = ClientScope.objects.filter(
-                Q(client=client) & Q(scope__label=request.GET["scope"])
+                Q(client=client)
             )
+            requested_scopes = self.request.GET['scopes'].split(' ')
+
+            ## NEEDS TO BE TESTED - TEST PENDING
+            for scope in requested_scopes:
+                print(scope)
+
             if not scope.exists():
                 return HttpResponse("provided scope was out of bound.")
         return super().dispatch(request, *args, **kwargs)
@@ -89,11 +95,7 @@ class OTPView(generic.CreateView):
 
 class GetAuthGrantConfirmation(generic.TemplateView):
     template_name = "CAuth/confirmation.html"
-    
-    def get(self, request, *args, **kwargs):
-        print("HELLO WORLD")
-        return super().get(request, *args, **kwargs)
-
+   
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         callback_uri = Client.objects.get(client_id=self.request.GET['client_id']).callback_uri
