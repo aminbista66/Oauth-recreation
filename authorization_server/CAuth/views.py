@@ -13,6 +13,8 @@ from accounts.forms import OTPForm
 from .models import AuthCode, Client, ClientScope, Scope
 from django.db.models import Q
 from .utils import get_auth_code, customClaimToken, IdTokenClaim
+from .forms import AddScopeForm, ClientRegistrationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 import random
 import secrets
 
@@ -28,14 +30,10 @@ class CustomLoginView(LoginView):
             client = client.first()
             print(client)
             scope = ClientScope.objects.filter(
-                Q(client=client)
+                Q(client=client) & Q(scope__label=self.request.GET['scope'])
             )
-            requested_scopes = self.request.GET['scopes'].split(' ')
-
-            ## NEEDS TO BE TESTED - TEST PENDING
-            for scope in requested_scopes:
-                print(scope)
-
+ 
+            print(scope)
             if not scope.exists():
                 return HttpResponse("provided scope was out of bound.")
         return super().dispatch(request, *args, **kwargs)
@@ -57,6 +55,7 @@ class CustomLoginView(LoginView):
             user_otp.code = random.randint(10000, 99999)
             user_otp.save()
             status = send_otp(authenticated_user.phone, user_otp.code)
+            print(status)
             if status:
                 messages.success(
                     self.request, "A verification code has been sent to your phone."
@@ -115,10 +114,40 @@ class GetAuthGrant(generic.RedirectView):
         if self.request.GET['response_type'] == "token":
             refresh = customClaimToken.get_token(self.request.user, self.request.GET['scope'])
             return f"{callback_uri}/?refresh_token={str(refresh)}&access_token={str(refresh.access_token)}"
-        elif self.request.GET['response_type'] == "id_token":
+        elif self.request.GET['scope'] == "open_id" and self.request.GET['response_type'] == 'id_token':
             refresh = IdTokenClaim.get_token(self.request.user)
-            return f"{callback_uri}/?refresh_token={str(refresh)}&access_token={str(refresh.access_token)}"
+            return f"{callback_uri}/?id_token={str(refresh.access_token)}"
             
         auth_code = get_auth_code(self.request.user)
         print(auth_code)
         return f"{callback_uri}/?auth_code={auth_code}"
+
+class ClientRegistrationView(LoginRequiredMixin, generic.CreateView):
+    form_class = ClientRegistrationForm
+    template_name = "CAuth/client_registration.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy("c_auth:add_scope")
+
+    def form_valid(self, form):
+        if form.is_valid():
+            data = form.save(commit=False)
+            data.user = self.request.user
+            data.save()
+        return super().form_valid(form)
+
+class AddScopeView(LoginRequiredMixin, generic.CreateView):
+    form_class = AddScopeForm
+    template_name = "CAuth/scope_add.html"
+
+    def get_success_url(self) -> str:
+        return reverse_lazy("accounts:home")
+
+    def form_valid(self, form):
+        if form.is_valid():
+            data = form.save(commit=False)
+            client = Client.objects.filter(user=self.request.user)
+            if client.exists():
+                data.client = client.first()
+                data.save()
+        return super().form_valid(form)

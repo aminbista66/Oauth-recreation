@@ -10,5 +10,8 @@ urlpatterns = [
     path('auth-grant-confirmation/', views.GetAuthGrantConfirmation.as_view(), name="auth_grant_confirmation"),
     path('auth-grant/', views.GetAuthGrant.as_view(), name="auth_grant"),
     
-    path('token-refresh/', TokenRefreshView.as_view(), name="token_refresh")
+    path('token-refresh/', TokenRefreshView.as_view(), name="token_refresh"),
+
+    path('client-register/', views.ClientRegistrationView.as_view(), name='client_registration'),
+    path('add-scope/', views.AddScopeView.as_view(), name='add_scope'),
 ]

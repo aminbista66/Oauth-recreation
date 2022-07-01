@@ -27,7 +27,9 @@ def send_otp(phone, code):
             to = f"+977{phone}", 
             from_ = "+15207794628",
             body = f"{code}")
+        print("HELLO WORLD")
         print(message.sid)
         return True
-    except:
+    except Exception as e:
+        print(code)
         return False
