@@ -18,8 +18,8 @@ def send_verification_mail(email, token):
 
 def send_otp(phone, code):
     try:
-        account_sid = "ACe827ae809d673fe9640975ff9e321dab"
-        auth_token  = "cbec9b916ec7127248521af7e1561712" 
+        account_sid = "...." #Twilio sccount sid
+        auth_token  = "..." #Twilio auth token
         
         client = Client(account_sid, auth_token)
 
